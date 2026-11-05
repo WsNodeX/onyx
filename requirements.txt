@@ -1,0 +1,2 @@
+# Onyx has zero runtime dependencies.
+# Everything is implemented with the Python standard library only.

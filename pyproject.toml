@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "onyx-framework"
+version = "1.0.0"
+description = "A zero-dependency Python micro web framework with routing, middleware, and a built-in test client."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+keywords = ["web", "framework", "http", "routing", "middleware", "wsgi"]
+authors = [{ name = "WsNodeX" }]
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Internet :: WWW/HTTP",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+]
+
+[project.urls]
+Homepage = "https://github.com/WsNodeX/onyx"
+Repository = "https://github.com/WsNodeX/onyx"
+
+[tool.setuptools.packages.find]
+include = ["onyx*"]
