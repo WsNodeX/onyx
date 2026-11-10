@@ -15,17 +15,46 @@ jobs:
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
     steps:
       - uses: actions/checkout@v4
+
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+
       - name: Install (no dependencies required)
         run: python -m pip install --upgrade pip
+
       - name: Run tests
         run: python -m unittest discover -s tests
+
+      # The previous version wrote this as a flow scalar:
+      #
+      #   run: python -m onyx run ... --port 8000 &
+      #     sleep 2
+      #     curl ...
+      #
+      # YAML folds those continuations into ONE line, so the shell saw
+      # `... & sleep 2 curl ...` — the background job swallowed the rest and the
+      # step failed without ever reaching the first curl. A block scalar keeps
+      # the newlines.
+      #
+      # Also replaced the fixed `sleep 2` with a readiness poll, and `kill %1`
+      # with a captured PID plus a trap, because `%1` job control is not
+      # reliable in a non-interactive shell.
       - name: Smoke test the CLI
-        run: python -m onyx run examples.demo_app:app --port 8000 &
-          sleep 2
-          curl -s http://127.0.0.1:8000/ | grep -q "Onyx demo"
-          curl -s -X POST http://127.0.0.1:8000/api/todos -H "Content-Type: application/json" -d '{"title":"buy milk"}' | grep -q '"id"'
-          kill %1 2>/dev/null || true
+        run: |
+          set -euo pipefail
+          python -m onyx run examples.demo_app:app --port 8000 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID 2>/dev/null || true' EXIT
+
+          for _ in $(seq 1 20); do
+            if curl -sf http://127.0.0.1:8000/ > /dev/null 2>&1; then break; fi
+            sleep 0.5
+          done
+
+          curl -sf http://127.0.0.1:8000/ | grep -q "Onyx demo"
+          curl -sf -X POST http://127.0.0.1:8000/api/todos \
+            -H "Content-Type: application/json" \
+            -d '{"title":"buy milk"}' | grep -q '"id"'
+          echo "smoke test passed"
