@@ -8,6 +8,11 @@ or simply ``python examples/server.py``.
 """
 from __future__ import annotations
 
+import os
+import sys
+
+# Run from a fresh clone without `pip install -e .`.
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from onyx import Blueprint, Onyx, Request, Response, Middleware
 from onyx.errors import NotFound, Unauthorized
 
